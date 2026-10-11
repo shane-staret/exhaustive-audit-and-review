@@ -9,7 +9,7 @@ Skills compose like functions. This one is a high-level function built from lowe
 
 One run can take **hours** and start dozens to hundreds of subagents on a large workspace. Run it before a major release or after an overhaul, not every week. A preflight step always shows you the module list and a token and time estimate, and asks before anything starts.
 
-**It never fixes anything by itself.** You triage the findings by ID, and the bundled `/apply-rec` skill plans each fix you choose and asks before it changes a file.
+**It never fixes anything by itself.** You triage the findings by ID. The bundled `/apply-rec` skill plans each fix you choose and shows you the plan. It asks you about every gated one (security, destructive, Claude Code config, `settings.json` or `CLAUDE.md`, public API, major version bumps); the IDs you typed are your go-ahead for the routine rest.
 
 ## How it works
 
@@ -46,7 +46,7 @@ Your Claude Code session runs the audit itself. It dispatches every agent, and a
    The report opens with `EXHAUSTIVE-AUDIT COMPLETE`, or with `EXHAUSTIVE-AUDIT PARTIAL — not reviewed: …` when any part could not be reviewed. It is never quietly incomplete.
 6. **Present.** You get findings by severity and dimension, every critical, the top fixes, coverage, and anything not reviewed. You also get the native tools it recommends but never starts: `/code-review ultra` before a release, and `/doctor`.
 
-Then you decide: `apply W-2 M3-1` runs `/apply-rec`, which plans first and asks before any change. A later `diff` shows what is new, what recurs, what got worse or better, and what was fixed. A finding counts as fixed only with evidence: an `/apply-rec` log, or a commit message that names its ID. So when you fix one by hand, put its ID in the commit message; otherwise it shows as DROPPED, for you to check.
+Then you decide: `apply W-2 M3-1` runs `/apply-rec`, which plans first, shows the plan, and asks about every gated item before any change. A later `diff` shows what is new, what recurs, what got worse or better, and what was fixed. A finding counts as fixed only with evidence: an `/apply-rec` log, or a commit message that names its ID. So when you fix one by hand, put its ID in the commit message; otherwise it shows as DROPPED, for you to check.
 
 ## What ships in this package
 
@@ -77,7 +77,7 @@ Then you decide: `apply W-2 M3-1` runs `/apply-rec`, which plans first and asks 
   - Subagent nesting must be allowed at least 2 levels deep. The default is 3; `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` changes it.
   - The concurrency cap must be at least 8, because one code review is six agents and each wave keeps two slots free. Keep its default of 20 or higher (`CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS`).
   - The preflight checks both.
-- bash 3.2 or later, python3 (3.9 or later), git, curl, and a sha256 tool (`shasum`, `sha256sum` or `openssl`; the installer uses it to record what it installed). `timeout` or `gtimeout` is used when present, to bound slow commands.
+- bash 3.2 or later, python3 (3.9 or later is tested; the helper refuses anything older than 3.7), git, curl, and a sha256 tool (`shasum`, `sha256sum` or `openssl`; the installer uses it to record what it installed). `timeout` or `gtimeout` is used when present, to bound slow commands.
 - macOS is tested. The scripts are plain bash and are meant to work on Linux.
 - **Optional companions:**
   - [claude-code-new-functionality-check](https://github.com/shane-staret/claude-code-new-functionality-check), for the currency step;
@@ -161,8 +161,10 @@ On a real workspace, start with **sampled** coverage to see the cost, then run *
 | `/exhaustive-audit-and-review resume <run>` | continue a run that was interrupted |
 | `/exhaustive-audit-and-review status` | the runs so far and where each stopped; nothing is started |
 | `/exhaustive-audit-and-review diff` | compare the last two runs: new, recurring, regressed, improved, resolved (with evidence of a fix), dropped (gone without such evidence) and approximate matches |
-| `apply W-2 M3-1 CS-4` | `/apply-rec` plans those fixes and asks before changing anything |
+| `apply W-2 M3-1 CS-4` | `/apply-rec` plans those fixes, shows the plan and asks about every gated one; add `--config-dir <dir>` for a run audited with that option, such as the demo |
 | `walk me through CS-4` | one finding, its evidence and what fixing it involves |
+
+Every mode also takes `--config-dir <dir>`. A run lives in the data folder of the config it audited, so `resume`, `status`, `diff` and `apply` need the same `--config-dir` the run used: for the demo, `--config-dir /tmp/audit-demo/claude-config`.
 
 ## Privacy and safety
 
@@ -175,7 +177,7 @@ On a real workspace, start with **sampled** coverage to see the cost, then run *
 - **Audited folders are data, not code.** The helper's python starts in isolated mode, so a file in the audited folder named like a python module (such as `json.py`) is never imported. When you audit a config folder other than your own, its scripts and `CHECK=` commands are never run.
 - **Fetched pages are checked twice.** Every research URL, and the page it finally lands on after redirects, must be public https: no user name in the URL, no local or private address in any spelling. The fetch follows redirects only over https, and TLS certificate checks guard what a name resolves to.
 - **Names, never values.** Environment variables, MCP servers and secrets appear by name only. Anything secret-shaped that slips into a finding is masked.
-- **No headless sessions.** Everything runs inside your interactive session as normal subagents. On a subscription it counts against your plan's usage; with API-key billing it is charged at your model's prices.
+- **No headless sessions.** Everything runs inside your interactive session as normal subagents. On a subscription it counts against your plan's usage; with API-key billing it is charged at model prices. Every shipped agent pins `model: sonnet` in its file, so the subagents run on Sonnet whatever model your main session uses; change that line in an agent file to choose another.
 - **Paths stay relative.** Reports use paths relative to the audited folder, and per-machine data lives in the data folder of the config you audit (`~/.claude/exhaustive-audit-and-review/` by default), which nothing publishes. With `REPORT_LAYOUT=assets-output`, the reports are written inside the audited folder instead, so keep them out of anything you publish.
 
 ## Files
@@ -217,7 +219,7 @@ bash exhaustive-audit-and-review/hooks/tests/test-exhaustive-audit-and-review-he
   ```bash
   C="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
   while read -r sum file; do
-    [ "$(shasum -a 256 "$C/$file" 2>/dev/null | cut -c1-64)" = "$sum" ] && printf '%s\n' "$file"
+    [ "$( { sha256sum "$C/$file" || shasum -a 256 "$C/$file"; } 2>/dev/null | cut -c1-64)" = "$sum" ] && printf '%s\n' "$file"
   done < "$C/exhaustive-audit-and-review/installed.sha256"
   ```
 

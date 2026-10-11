@@ -137,7 +137,7 @@ Even a verified quote proves only that the text is on the page, not that it answ
 
 | Step | What happened |
 |---|---|
-| Preflight | 2 modules, nothing excluded, 17/17 agents present, nesting depth 5, cap 20 → 1 wave of 18. Estimate shown: 19 agents. The user answered yes. |
+| Preflight | 2 modules, nothing excluded, nesting depth 5, cap 20 → 1 wave of 18. Estimate shown: 19 agents. The user answered yes. (During this run `capabilities` still looked for the agents in the demo config and reported them missing; the fixed helper reports 17/17 present. See `worked-example.md`.) |
 | Currency | `/claude-code-new-functionality-check status` (the companion skill, called by the audit) reported a fresh sweep. The demo config itself has none, which became CS-10. |
 | Wave 1 | 8 scopes in one message: 4 dimension agents, 2 project-health, 2 code-reviewer, each launching its 5 specialists. Every reply went through `save-result` and `validate`: 8 valid, 0 failed. |
 | Research | 1 researcher, 4 questions, 4 of 6 leads verified. |

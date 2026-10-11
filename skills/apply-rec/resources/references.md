@@ -36,5 +36,5 @@ Where each rule in this skill and its five agents comes from. Primary sources fi
 ## Deliberate deviations
 
 - **Monorepos.** A dependency bump runs only in a module that is its own git repository, so in a monorepo every bump is planned as BLOCKED and never applied: its branch would switch every other module too.
-- **Layout.** superpowers' writing-skills guidance keeps supporting files flat; this skill keeps them in `resources/`, per the author's skill-authoring standard, which wins where the two conflict.
+- **Layout.** superpowers' writing-skills guidance keeps supporting files flat; this skill keeps them in `resources/` (references, a testing guide, a worked example), which a reader loads only when needed.
 - **Decision record.** These tables carry the design decisions; there is no separate decision log in the package.

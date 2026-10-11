@@ -1432,6 +1432,9 @@ check "scrub-check: a home path exits 2" "2" "$RC"
 check_contains "scrub-check: ... as an absolute path" "line 1: absolute path" "$OUT"
 run scrub-check "$SB/agenda-paths.md"
 check "scrub-check: ~/, /home/ and C:\\ paths are flagged" "3" "$(printf '%s\n' "$OUT" | grep -c 'absolute path')"
+# Exit 2 means "rewrite and check again", exit 3 means "stop": the exit-2 text must never say BLOCKED.
+check_contains "scrub-check: a finding (exit 2) tells the caller to rewrite" "REWRITE: do not dispatch this text" "$OUT"
+check_absent "scrub-check: ... and never says BLOCKED, which means stop" "BLOCKED" "$OUT$ERR"
 # The other home spellings the report redaction knows (/root, a WSL drive mount, a file:// URL) must not
 # reach the web either, while a web page's own /home/ or /root/ path is not a local path.
 printf 'Q01 · Read %ssomeone/x\nQ02 · and /mnt/c%ssomeone/y\nQ03 · and file://%ssomeone/z\nQ04 · fine: https://example.com%spage and https://example.org%sx\n' \

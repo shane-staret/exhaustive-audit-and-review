@@ -4,7 +4,7 @@
 
 **Enforcement:** the `code-reviewer` agent's five-specialist ensemble checks compliance whenever a review runs; `/exhaustive-audit-and-review` audits it periodically across a whole workspace.
 
-**Sources:** distilled from Robert C. Martin's *Clean Code* (wojteklu summary gist) and Codacy's clean-code guidance, adapted for code that Claude Code writes.
+**Sources:** distilled from Robert C. Martin's *Clean Code* (wojteklu's summary gist, https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and Codacy's clean-code guidance, adapted for code that Claude Code writes.
 
 ---
 

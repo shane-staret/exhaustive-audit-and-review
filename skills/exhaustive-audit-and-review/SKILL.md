@@ -9,7 +9,7 @@ A read-only audit of two things at once: the Claude Code system itself (hooks, s
 
 **You, the main session, are the orchestrator.** You run this procedure and dispatch every agent with the Agent tool, and no agent orchestrates the audit. A run's state lives in its run folder, so a compacted or interrupted session can `resume` it.
 
-**It never fixes anything.** Findings are triaged by ID: `/apply-rec <IDs>`, which ships alongside, plans each fix and asks before it changes anything. The native tools it recommends at the end are the user's to start.
+**It never fixes anything.** Findings are triaged by ID: `/apply-rec <IDs>`, which ships alongside, plans each fix, shows the plan, and asks about every gated item; the IDs the user typed are the go-ahead for the routine rest. The native tools it recommends at the end are the user's to start.
 
 | Resource | Load when… |
 |---|---|
@@ -69,9 +69,9 @@ When `capabilities` reports a companion agent missing (no `code-reviewer`, say),
 | `status` | `exhaustive_audit_and_review.sh status` and `exhaustive_audit_and_review.sh runs`; no agent runs |
 | `diff [<old> <new>]` | compare two runs, by default the last two |
 
-`run` takes two options:
-- `--root <dir>`: the folder to audit. It defaults to the folder Claude was started in.
-- `--config-dir <dir>`: the config folder. It defaults to `${CLAUDE_CONFIG_DIR:-~/.claude}`.
+Options:
+- `--config-dir <dir>`, for every mode: the config folder. It defaults to `${CLAUDE_CONFIG_DIR:-~/.claude}`. A run lives in that folder's data folder, so `resume`, `status`, `diff` and `/apply-rec` need the same `--config-dir` the run used (the bundled demo's runs live in the demo's own config folder).
+- `--root <dir>`, for `run`: the folder to audit. It defaults to the folder Claude was started in.
 
 The preflight's plan lists exactly which agents a scope runs.
 
@@ -93,7 +93,7 @@ The preflight's plan lists exactly which agents a scope runs.
 4. **Ask with AskUserQuestion, in one call**, and offer "cancel" on the first question:
    - (a) Audit these modules, or narrow them? If the user narrows them, run `plan` again and show the new estimate.
    - (b) Exhaustive or sampled? Sampled reviews only the riskiest files, and its coverage table says so.
-   - (c) Run the currency sweep first? Ask only when the companion is installed and its last sweep is overdue: run the `reminder` path that `capabilities` prints with `--status` (read-only, no network), and ask when its first word is not `FRESH`.
+   - (c) Run the currency sweep first? Ask only when the companion is installed and its last sweep is overdue. The companion's reminder hook knows: `capabilities` prints its path as `companions.new_functionality_check.reminder` (normally `<config>/hooks/claude-code-new-functionality-check-reminder.sh`). Run that script with `--status` (read-only, no network), and ask when its first word is not `FRESH`.
    - (d) Run the `CHECK=` commands from `house.conf`? Ask only when there are any.
 5. **Only after a yes:**
    - save the plan for the chosen coverage to a temporary file outside the audited folder (under `$TMPDIR`, for example): redirect `exhaustive_audit_and_review.sh plan … --coverage <choice>` into it, and never retype it. `init-run` copies it into the run folder;
@@ -178,7 +178,7 @@ Save and validate the reply anyway, so that the run records it. `finalize` lists
 `exhaustive_audit_and_review.sh finalize <run>` does four things:
 - It assigns the IDs: `W-n` for workspace-wide findings, `M<k>-n` for module *k*, `CS-n` for claude-system.
 - It writes `findings.json`, the record of the run.
-- It renders the reports: a workspace summary (`exhaustive_audit_v<N>_<UTC>.md`), a page per module, the claude-system report (`exhaustive_audit_claude_system_v<N>_<UTC>.md`), and a coverage table of lines reviewed out of total, per module. `REPORT_LAYOUT` decides where they go (`resources/wiring.md`).
+- It renders the reports: a workspace summary (`exhaustive_audit_v<N>_<UTC>.md`) with a section per module, the claude-system report (`exhaustive_audit_claude_system_v<N>_<UTC>.md`), and a coverage table of lines reviewed out of total, per module. `REPORT_LAYOUT` decides where they go (`resources/wiring.md`).
 - It prints the banner as its first line: `EXHAUSTIVE-AUDIT COMPLETE` only when every planned scope has a valid result and `discover` read every path, otherwise `EXHAUSTIVE-AUDIT PARTIAL — not reviewed: …`. Unreadable paths and cloud placeholder files count as not reviewed. Report the banner exactly as printed.
 
 **Stable IDs.** An ID follows the finding's fingerprint (dimension, module, `check`, `subject` and first evidence path), never its wording. A finding whose fingerprint matches the previous run's `findings.json` keeps its old ID.
@@ -214,7 +214,7 @@ Reply: "apply <IDs>" (runs /apply-rec), "diff" (compare with the last run), or "
 
 ## Triage and follow-up
 
-- **Apply.** On the user's word, run `/apply-rec <IDs>`. It looks each ID up with `exhaustive_audit_and_review.sh lookup <ID> [--run <run>]`, plans first, and asks before it changes anything. "Sounds good" in passing is not that word. For a run made with `--config-dir`, pass the same `--config-dir` to `/apply-rec`, because `lookup` finds runs in that config's data folder.
+- **Apply.** On the user's word, run `/apply-rec <IDs>`. It looks each ID up with `exhaustive_audit_and_review.sh lookup <ID> [--run <run>] [--config-dir <dir>]`, plans first, shows the plan, and asks about every gated item. "Sounds good" in passing is not that word. For a run made with `--config-dir`, pass the same `--config-dir` to `/apply-rec`, because `lookup` finds runs in that config's data folder.
 - **Walk through.** For "walk me through <ID>": `lookup <ID>` (with the run's `--config-dir`), read the evidence at its cited lines, then explain the finding, what a fix would involve and its risk. Change nothing.
 - **Diff.** `exhaustive_audit_and_review.sh diff [<old> <new>]` sorts the findings by fingerprint into seven buckets:
   - NEW: only in the newer run;

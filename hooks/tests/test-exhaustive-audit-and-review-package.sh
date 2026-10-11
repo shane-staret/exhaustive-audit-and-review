@@ -88,28 +88,31 @@ LEDGER_ID_RE='RW-[0-9]{4}'
 DECISION_ID_RE='ADR 0[0-9]{3}'
 TIMED_STOP_RE='stops? after [0-9]+ ?min(ute)?s?([^a-z]|$)'
 HEADLESS="claude"" -p \""      # assembled, so this file never holds the invocation it bans
-# House-only files read one machine's real config (wiring suites) or name its private repository (the
-# publishing script and its suite), so a public package must never list them.
+# Machine-specific files read one machine's real config (wiring suites) or name its private repository
+# (the author's publishing script and its suite, by their file names below), so the package never lists them.
 HOUSE_ONLY_RE='(^|/)([^/]*-wiring\.sh|sync_config_repo\.sh|test-sync-config-repo\.sh)$'
 ban() {
     # ban <file list> <description> <grep options> <pattern> -> one PASS when no file named in the list (one
     # path per line) matches, else one FAIL naming the first hits. A file grep cannot read (exit above 1), or
     # a list that names no file, fails too: a scan that cannot run is never clean.
-    local list="$1" what="$2" opts="$3" pattern="$4" f out rc scanned=0 hits="" unread=""
+    local list="$1" what="$2" opts="$3" pattern="$4" f rel out rc scanned=0 hits="" unread=""
     [ -r "$list" ] || { bad "the file list for $what cannot be read ($list)"; return; }
     while IFS= read -r f; do
         [ -n "$f" ] || continue
         scanned=$((scanned+1))
+        # Name the file relative to the package or the sandbox, and shorten only the matched text: a long
+        # temporary folder must never cut the file name out of the verdict.
+        rel="${f#$ROOT/}"; rel="${rel#$SANDBOX/}"
         out="$(grep -n "$opts" -- "$pattern" "$f" 2>"$SANDBOX/ban.err")"; rc=$?
         case "$rc" in
-            0) hits="$hits$(printf '%s\n' "$out" | sed "s|^|${f#$ROOT/}:|")$NL" ;;
+            0) hits="$hits$(printf '%s\n' "$out" | cut -c1-100 | sed "s|^|${rel}:|")$NL" ;;
             1) ;;
-            *) unread="$unread ${f#$ROOT/} (grep exit $rc: $(head -n 1 "$SANDBOX/ban.err"))" ;;
+            *) unread="$unread $rel (grep exit $rc: $(head -n 1 "$SANDBOX/ban.err"))" ;;
         esac
     done < "$list"
     if [ -n "$unread" ]; then bad "the scan for $what could not read:$unread"
     elif [ "$scanned" -eq 0 ]; then bad "no file was scanned for $what"
-    elif [ -n "$hits" ]; then bad "shipped files contain $what: $(printf '%s' "$hits" | head -3 | cut -c1-140 | tr '\n' ' ')"
+    elif [ -n "$hits" ]; then bad "shipped files contain $what: $(printf '%s' "$hits" | head -3 | tr '\n' ' ')"
     else ok "no shipped file contains $what"; fi
 }
 house_only() { grep -E -- "$HOUSE_ONLY_RE" "$1"; }   # house_only <path list> -> the house-only paths in it
@@ -165,6 +168,11 @@ expect_ban "the decision-record ban catches a planted id" "$NC/decision-id.md" -
 expect_ban "the headless ban catches a planted invocation" "$NC/headless.md" -F "$HEADLESS"
 expect_ban "the timed-stop ban catches a planted promise, whatever its case" "$NC/timed-stop.md" -iE "$TIMED_STOP_RE"
 expect_ban "a file the scan cannot read fails the ban" "$NC/no-such-file.md" -E "$HOME_PATH_RE"
+# A colleague's TMPDIR can be long. The verdict must still name the planted file, whatever the sandbox's
+# depth, or every control above fails on a deep temporary folder (found from a fresh clone, 2026-10-11).
+DEEP_NC="$NC/$(printf 'deep%.0s' 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20)/$(printf 'nested%.0s' 1 2 3 4 5 6 7 8 9 10)"
+mkdir -p "$DEEP_NC" && cp "$NC/mac-home.md" "$DEEP_NC/mac-home-deep.md"
+expect_ban "the home-path ban names a planted file however deep the sandbox is" "$DEEP_NC/mac-home-deep.md" -E "$HOME_PATH_RE"
 printf 'plain text: /usr/local, RW-42, ADR 7, stop after the minutes run out\n' > "$NC/clean.md"
 case "$(verdict_of_ban "$NC/clean.md" -iE "$HOME_PATH_RE|$LEDGER_ID_RE|$DECISION_ID_RE|$TIMED_STOP_RE")" in
     PASS:*) ok "control: a file with near misses passes the bans" ;;

@@ -112,6 +112,7 @@ bash $H finalize 20261010T093500Z --config-dir <config>
 ```
 EXHAUSTIVE-AUDIT COMPLETE
 findings: 80 (critical 7, high 26, medium 28, low 17, info 2)
+findings.json: <config>/…/findings.json
 report: <config>/…/exhaustive_audit_v1_20261010T100801Z.md
 claude-system report: <config>/…/exhaustive_audit_claude_system_v1_20261010T100801Z.md
 ```

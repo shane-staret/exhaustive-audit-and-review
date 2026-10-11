@@ -70,7 +70,7 @@ check() {
     # check <name> <expected> <actual>
     if [ "$2" = "$3" ]; then PASS=$((PASS+1)); echo "PASS: $1"; else FAIL=$((FAIL+1)); echo "FAIL: $1 (expected [$2], got [$3])"; fi
 }
-skip() { SKIP=$((SKIP+1)); echo "SKIP-LOUD: $1"; }   # run-all-tests.sh labels a suite that prints SKIP-LOUD
+skip() { SKIP=$((SKIP+1)); echo "SKIP-LOUD: $1"; }   # a test runner can flag a passing suite that skipped checks
 yes_no() { if "$@"; then echo yes; else echo no; fi; }
 contains() { case "$1" in *"$2"*) echo yes ;; *) echo no ;; esac; }
 count_matching() { printf '%s\n' "$1" | grep -cE -- "$2"; }   # count_matching <text> <extended regex>
@@ -139,8 +139,8 @@ new_fixture() {
     printf 'compiled\n' > "$F/skills/apply-rec/__pycache__/notes.cpython-312.pyc"
     printf '[core]\n' > "$F/skills/$NAME/.git/config"
     printf '{}\n' > "$F/skills/apply-rec/.pytest_cache/v/lastfailed"
-    # Editor leftovers, at the top of a folder entry and deeper. The export to the public repository skips
-    # the same set, so the two lists must stay equal.
+    # Editor leftovers, at the top of a folder entry and deeper: never installed, and never reported as
+    # extra files.
     for litter in 'SKILL.md~' '.SKILL.md.swp' '.SKILL.md.swo' 'SKILL.md.orig' 'SKILL.md.rej' 'SKILL.md.tmp' '.#SKILL.md' '#SKILL.md#'; do
         printf 'editor leftover\n' > "$F/skills/$NAME/$litter"
         printf 'editor leftover\n' > "$F/skills/apply-rec/resources/$litter"

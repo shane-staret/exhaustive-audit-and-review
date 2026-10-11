@@ -34,7 +34,7 @@ It checks what the package promises:
   - `package.manifest` lists exactly what ships, and every entry exists.
   - Paths stay relative and inside the package, with no duplicates.
   - No `code-review` skill ships, so the built-in `/code-review` stays reachable.
-  - No house-only file ships, whether a line names it or a folder entry sweeps it in: a `*-wiring.sh` suite (it reads one machine's real config), or the script that publishes the package (`sync_config_repo.sh`) and its suite.
+  - No machine-specific file ships, whether a line names it or a folder entry sweeps it in: a `*-wiring.sh` suite (it reads one machine's real config), or the author's publishing script and its suite.
 - **The agents.**
   - The five audit agents have their exact `tools:` lines, and only the researcher has web tools.
   - `omitClaudeMd: true` is set on the claude-system agent and the researcher.

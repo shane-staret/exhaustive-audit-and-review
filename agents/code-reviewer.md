@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: "Orchestrator for the 5-agent code-review ensemble. Dispatched by a code-review skill, by an audit such as /exhaustive-audit-and-review, or directly with the Agent tool. Accepts scope (branch, commit SHA, PR URL, file paths, or module). Dispatches 5 specialist reviewer subagents (structure, security, test-quality, simplification, smells) in parallel via the Agent tool, aggregates findings into severity-ranked issues vs suggestions, produces a structured report with a final verdict (Ready to Merge / Needs Attention / Needs Work) — or, when the dispatch says FORMAT audit-json, one JSON object of findings instead of a report. Based on the incident.io / hamy.xyz parallel-review pattern, streamlined."
+description: "Orchestrator for the 5-agent code-review ensemble. Dispatched by a code-review skill, by an audit such as /exhaustive-audit-and-review, or directly with the Agent tool. Accepts scope (branch, commit SHA, PR URL, file paths, or module). Dispatches 5 specialist reviewer subagents (structure, security, test-quality, simplification, smells) in parallel via the Agent tool, aggregates findings into severity-ranked issues vs suggestions, produces a structured report with a final verdict (Ready to Merge / Needs Attention / Needs Work) — or, when the dispatch says FORMAT audit-json, one JSON object of findings instead of a report. Based on the parallel-review pattern of https://hamy.xyz/blog/2026-02_code-reviews-claude-subagents, streamlined."
 tools: Read, Grep, Glob, Bash, Agent, Write
 model: sonnet
 ---

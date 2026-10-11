@@ -96,7 +96,7 @@ Use the gathered evidence to fill in:
 | Title | "Incident: <type> — <module>" |
 | Module | from the module registry row, else the README |
 | Last reviewed | today's UTC date |
-| Severity when triggered | inferred from module role (production-service = P1; cron = P2; local = P3) |
+| Severity when triggered | inferred from module role and the incident type, on the template's scale (production service down = P0; production degraded = P1; cron or batch = P2; local = P3) |
 | Symptom (operator-observable) | derived from README "What it does"; recast as observable failure mode (e.g., "Users see 'try again' message instead of chat response") |
 | Detection (how to confirm) | derived from verify command + logging patterns; e.g., "Tail logs at `<path>`; look for `<grep pattern>`" |
 | First-response (5-min mitigation) | conservative: restart, scale up, fail over; leave a TODO for specifics |

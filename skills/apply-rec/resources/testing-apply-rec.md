@@ -9,7 +9,7 @@ How to check work done under this skill before calling it done. Runner evidence,
 3. **The log has one row per requested ID, in the contract's shape.**
 
    ```bash
-   RUN_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/exhaustive-audit-and-review/runs/<run>"
+   RUN_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/exhaustive-audit-and-review/runs/<run>"   # or <dir>/exhaustive-audit-and-review/runs/<run> for a run made with --config-dir <dir>; $EXHAUSTIVE_AUDIT_DIR/runs/<run> when that is set
    grep -cE '^\| (W|CS|M[0-9]+)-[0-9]+ \| (APPLIED|DECLINED|FAILED|DEFERRED) \| ' "$RUN_DIR/apply_rec_log_v<N>_<UTC>.md"
    ```
 

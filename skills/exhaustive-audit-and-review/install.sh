@@ -155,7 +155,8 @@ hash_lines() {
 list_folder() {
     # list_folder <root> <folder> -> every file under <root>/<folder>, as a path relative to <root>, sorted.
     # Never litter: OS files, caches, archives, backup copies and editor leftovers are neither installed nor
-    # reported. The export to the public repository skips the same editor leftovers; keep the two lists equal.
+    # reported. Any step that publishes this package must skip the same editor leftovers, or a published
+    # file and an installed one would differ.
     (CDPATH= cd -- "$1" && find "./$2" \( -type d \( -name archive -o -name .archive -o -name .git \
         -o -name __pycache__ -o -name .pytest_cache -o -name '*.bak*' \) -prune \) \
         -o \( -type f ! -name .DS_Store ! -name '*.bak*' ! -name '*.pyc' \
@@ -410,11 +411,13 @@ write_house_conf_template() {
 # REPORT_LAYOUT=run-dir
 # A command run as an extra check, only after you agree to it at preflight; one line per command.
 # CHECK=
-# The command that runs your Claude Code configuration's own tests, for the claude-system review.
+# The command that runs your Claude Code configuration's own tests. /apply-rec runs it to check a change
+# it made to your config (a CS- finding); the audit itself never runs it. One line per command.
 # CONFIG_TEST=
 # The most lines of code one code-review scope covers (default 4000).
 # MAX_LOC_PER_REVIEW=
-# The most web searches and page fetches the research step may use in one run.
+# The most research questions one run sends to the web-only researcher (default 8); the most
+# severe findings' questions go first.
 # RESEARCH_BUDGET=
 HOUSE
 }

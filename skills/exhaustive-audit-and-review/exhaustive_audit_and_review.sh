@@ -50,7 +50,8 @@
 #       the validated findings' research questions, deduplicated, most severe first, at most
 #       RESEARCH_BUDGET; writes <run>/agenda.md and prints its path
 #   scrub-check FILE
-#       CLEAN (exit 0), or "line N: private term|absolute path|email" (exit 2; a term is never printed);
+#       CLEAN (exit 0), or "line N: private term|absolute path|email" lines and a "REWRITE: ..." line
+#       (exit 2: rewrite or drop those lines, then check again; a term is never printed);
 #       "BLOCKED: no denylist terms" (exit 3) when the denylists hold no usable term, and "BLOCKED: the
 #       denylist <path> exists but cannot be read" (exit 3) when one of them cannot be read
 #   attach-research RUN FILE
@@ -3112,7 +3113,7 @@ def cmd_scrub_check(argv):
     if hits:
         for hit in hits:
             print(hit)
-        print("BLOCKED: do not dispatch this text; rewrite those lines in public technical terms, or drop them")
+        print("REWRITE: do not dispatch this text; rewrite those lines in public technical terms, or drop them, then check again")
         return EXIT_PROBLEM
     print("CLEAN")
     return EXIT_OK

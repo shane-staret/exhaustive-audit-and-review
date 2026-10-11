@@ -19,7 +19,7 @@ The installer:
 | `agents/exhaustive-audit-and-review-researcher.md` | `<config>/agents/` | the researcher: `WebSearch, WebFetch` only, no local read |
 | `agents/code-reviewer.md` and the five `agents/code-reviewer-*.md` | `<config>/agents/` | dimension 1: the review ensemble (structure, security, test-quality, simplification, smells) |
 | `agents/project-health.md` | `<config>/agents/` | the hygiene half of dimension 2, launched in `REPORT ONLY` mode |
-| `skills/apply-rec/` and `agents/apply-rec-orchestrator.md`, `apply-rec-editor.md`, `apply-rec-analyst.md`, `dependency-modernizer.md`, `runbook-author.md` | `<config>/skills/`, `<config>/agents/` | triage by ID: plans each fix and asks before it changes anything |
+| `skills/apply-rec/` and `agents/apply-rec-orchestrator.md`, `apply-rec-editor.md`, `apply-rec-analyst.md`, `dependency-modernizer.md`, `runbook-author.md` | `<config>/skills/`, `<config>/agents/` | triage by ID: plans each fix, shows the plan, and asks about every gated item |
 | `templates/code_quality_standard.md`, `retry_standard.md`, `testing_standard.md`, `code_navigation_standard.md`, `runbook_incident.md.tmpl` | `<config>/templates/` | the standards the agents cite |
 | `hooks/tests/test-exhaustive-audit-and-review-{helper,package,install}.sh` | `<config>/hooks/tests/` | the offline suites; the installer always copies them, and nothing runs them unless you do |
 
@@ -57,11 +57,11 @@ Claude Code's defaults are what the audit needs, so set these in `settings.json`
 
 ## The data folder (per machine)
 
-`<config>/exhaustive-audit-and-review/`, written `<data>` below; `EXHAUSTIVE_AUDIT_DIR` moves it. It is never published and never part of the package. The installer creates it (0700) on its first `--yes` run, to keep its record `installed.sha256` there; `install.sh --yes --opt-in` also adds the denylist and `house.conf` templates. You can create it by hand instead (`mkdir -m 700`).
+`<config>/exhaustive-audit-and-review/`, written `<data>` below; `EXHAUSTIVE_AUDIT_DIR` moves it. It is never published and never part of the package. The installer creates `<config>/exhaustive-audit-and-review/` (0700) on its first `--yes` run, to keep its record `installed.sha256` there, and `install.sh --yes --opt-in` also adds the denylist and `house.conf` templates there; the installer always uses that folder, even when `EXHAUSTIVE_AUDIT_DIR` points the audit elsewhere. You can create it by hand instead (`mkdir -m 700`).
 
 Every file in it is optional. Without them, the audit runs on its defaults. Research is skipped, though: with no denylist term, `scrub-check` fails closed, and the report says so.
 
-When you audit another config folder with `--config-dir`, the run uses that folder's data folder: its settings, its notes and its run history.
+When you audit another config folder with `--config-dir`, the run uses that folder's data folder: its settings, its notes and its run history. `EXHAUSTIVE_AUDIT_DIR`, when set, wins over both: every run then uses that one folder, whatever `--config-dir` says.
 
 | File | Holds | Read by |
 |---|---|---|
@@ -120,13 +120,26 @@ MAX_LOC_PER_REVIEW=4000
 
 The audit recommends `/code-review ultra` and `/doctor`, and starts neither.
 
+## Markers the package reads in a module's CLAUDE.md
+
+All are optional comment lines in a module's (or the root's) `CLAUDE.md`. `config-facts` reports the ones it finds, and the agents honor them.
+
+| Marker | Effect |
+|---|---|
+| `# exhaustive-audit: skip` (or `# project-organization: skip`) | `discover` skips the module; the preflight lists it as skipped |
+| `# testing-standard: full\|standard\|minimal\|none` | the module's test tier (`templates/testing_standard.md`); `none` needs a one-line reason, and silences test findings |
+| `# test-command: <cmd>` | the module's test command; `/apply-rec` runs it after a change |
+| `# project-organization: verify <cmd>` | a quick smoke check (repeatable); `/apply-rec` runs it after a change, alongside `# test-command:` |
+| `# retry-standard: full\|standard\|minimal\|none` | the module's resilience tier (`templates/retry_standard.md`) |
+| `# logging-standard: verbose\|standard\|minimal`, `# code-quality: relaxed` | how strictly the code-quality rubric applies (`templates/code_quality_standard.md`) |
+
 ## Where things live at run time
 
 | Path | Holds | Safe to clear? |
 |---|---|---|
 | `<data>/runs/<run>/` | the run's plan, `config-facts.json`, the saved and validated agent results, the research agenda and result, `findings.json` (the record of the run), any `/apply-rec` logs, and the reports with `REPORT_LAYOUT=run-dir` | Not while you triage. The next run reuses IDs from `findings.json`, `/apply-rec` looks IDs up there, and `diff` reads the apply logs as evidence of fixes. |
 | `<root>/assets/output/` (only with `assets-output`) | the reports | yes, if `findings.json` is kept |
-| `<data>/installed.sha256` | what `install.sh --yes` put in `<config>`: one checksum and path per file | No. The installer uses it to tell a file it installed (safe to update) from your own file of the same name (left alone, reported `foreign`, replaced only with `--replace <path>`). |
+| `<config>/exhaustive-audit-and-review/installed.sha256` | what `install.sh --yes` put in `<config>`: one checksum and path per file | No. The installer uses it to tell a file it installed (safe to update) from your own file of the same name (left alone, reported `foreign`, replaced only with `--replace <path>`). |
 
 ## Checking the wiring
 
@@ -149,6 +162,6 @@ A dotfiles sync or a team deploy that replaces `agents/` or `skills/` can remove
 
 ## Uninstalling
 
-1. Move out of `<config>` only the files the installer put there and you have not changed since: the lines of `<data>/installed.sha256` whose checksum still matches the file (the package README has a loop that lists them). Never go by `package.manifest`: a file of the same name that you already had was reported `foreign`, left alone, and is still yours.
+1. Move out of `<config>` only the files the installer put there and you have not changed since: the lines of `<config>/exhaustive-audit-and-review/installed.sha256` whose checksum still matches the file (the package README has a loop that lists them). Never go by `package.manifest`: a file of the same name that you already had was reported `foreign`, left alone, and is still yours.
 2. A file you replaced on purpose with `--replace` has its original under `<config>/backups/exhaustive-audit-and-review-install/`; copy it back if you want it.
 3. The data folder holds your runs and your private lists: keep it, or move it somewhere else.
