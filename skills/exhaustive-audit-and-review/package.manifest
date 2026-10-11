@@ -1,0 +1,31 @@
+# package.manifest: every file the exhaustive-audit-and-review package installs, one path per line,
+# relative to the package root (the folder that holds skills/, agents/, templates/ and hooks/).
+# A line that ends in / names a whole folder: every file under it is installed.
+# install.sh reads this list; lines starting with # are comments, and blank lines are ignored.
+skills/exhaustive-audit-and-review/
+skills/apply-rec/
+agents/exhaustive-audit-and-review-architecture.md
+agents/exhaustive-audit-and-review-domain.md
+agents/exhaustive-audit-and-review-operations.md
+agents/exhaustive-audit-and-review-claude-system.md
+agents/exhaustive-audit-and-review-researcher.md
+agents/code-reviewer.md
+agents/code-reviewer-structure.md
+agents/code-reviewer-security.md
+agents/code-reviewer-test-quality.md
+agents/code-reviewer-simplification.md
+agents/code-reviewer-smells.md
+agents/project-health.md
+agents/apply-rec-orchestrator.md
+agents/apply-rec-editor.md
+agents/apply-rec-analyst.md
+agents/dependency-modernizer.md
+agents/runbook-author.md
+templates/code_quality_standard.md
+templates/retry_standard.md
+templates/testing_standard.md
+templates/code_navigation_standard.md
+templates/runbook_incident.md.tmpl
+hooks/tests/test-exhaustive-audit-and-review-helper.sh
+hooks/tests/test-exhaustive-audit-and-review-package.sh
+hooks/tests/test-exhaustive-audit-and-review-install.sh

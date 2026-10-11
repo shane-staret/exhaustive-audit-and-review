@@ -1,0 +1,101 @@
+# Incident Runbook: <INCIDENT_TYPE>
+
+**Module:** <MODULE>
+**Last reviewed:** <LAST_REVIEWED>
+**Severity when triggered:** <P0 | P1 | P2 | P3>
+**Authored by:** runbook-author agent (v<N>); refine by hand below
+
+<!-- P0 = service-down, customer-facing impact, all-hands.
+     P1 = production degraded, on-caller responds within 15 min.
+     P2 = batch failure, response within 4 hours.
+     P3 = local-only, response next business day. -->
+
+## Symptom (operator-observable)
+
+<!-- What does an operator SEE that triggers this runbook? Examples:
+     - "Users report 'try again' message instead of chat responses"
+     - "The dashboard returns 502 from status.example.com"
+     - "The nightly job 'sync_orders' has not written a log file in >24h" -->
+
+TODO: fill in the observable symptom (not the underlying cause).
+
+## Detection (how to confirm)
+
+<!-- Concrete steps to confirm this is the right runbook for what's happening.
+     Include exact commands, log file paths, dashboard URLs. -->
+
+1. <step>
+2. <step>
+3. <step>
+
+TODO: replace with module-specific detection steps.
+
+## First-response (5-min mitigation)
+
+<!-- The cheapest, fastest action that gives the operator breathing room.
+     Often: restart the service, fail over, disable a feature flag, scale up.
+     Should NOT require deep diagnosis. -->
+
+1. <step>
+2. <step>
+
+TODO: fill in 1-3 actions an operator can do in under 5 minutes.
+
+## Diagnostics (commands)
+
+<!-- Concrete commands to gather state. Each command should be safe to run
+     (read-only) — diagnostics should not change behavior. -->
+
+```bash
+# Inspect service status
+<cmd>
+
+# Tail recent logs
+<cmd>
+
+# Check the vendor's health (e.g., its public status page or health endpoint)
+<cmd>
+```
+
+TODO: replace with module-specific commands.
+
+## Mitigations (containment)
+
+<!-- Once root cause is partly understood, what stops the bleeding without
+     waiting for a full fix? Feature flags, traffic shifting, queue draining. -->
+
+- <mitigation>
+- <mitigation>
+
+TODO: fill in containment options.
+
+## Rollback (revert procedure)
+
+<!-- If the incident is suspected to be caused by a recent deployment or
+     change, document the exact revert procedure. Include who has rollback
+     authority and what coordination is needed (e.g., notify stakeholders). -->
+
+1. Identify the offending change: `git -C <module> log --oneline -10`.
+2. <revert step>
+3. <revert step>
+4. Verify with: `<verify cmd>`.
+
+TODO: fill in the rollback specifics for this module's deployment.
+
+## Post-mortem checklist
+
+After the incident is resolved, complete this checklist:
+
+- [ ] Capture timeline (detection → mitigation → resolution; UTC timestamps).
+- [ ] Identify root cause (use 5-whys or fishbone analysis).
+- [ ] Write blameless post-mortem in `<workspace>/docs/post-mortems/YYYY-MM-DD_<short_name>.md`.
+- [ ] Propagate the fix to related modules (check the project's architecture notes, for example ARCHITECTURE.md, for cross-module contracts).
+- [ ] Add a regression test (or a monitoring check that would have caught this earlier).
+
+## References
+
+- Module README: `<MODULE>/README.md`
+- Module CLAUDE.md (declared verify command): `<MODULE>/CLAUDE.md`
+- Architecture notes, if the project keeps them: `<WORKSPACE>/ARCHITECTURE.md`
+- Related runbooks (siblings in `<MODULE>/docs/runbooks/`):
+  - <list as you author them>
